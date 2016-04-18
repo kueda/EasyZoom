@@ -15,8 +15,17 @@
         // The time (in milliseconds) to display the error notice.
         errorDuration: 2500,
 
+        // Attribute to retrieve the zoom image URL from.
+        linkAttribute: 'href',
+
         // Prevent clicks on the zoom image link.
         preventClicks: true,
+
+        // Callback function to execute before the flyout is displayed.
+        beforeShow: $.noop,
+
+        // Callback function to execute before the flyout is removed.
+        beforeHide: $.noop,
 
         // Callback function to execute when the flyout is displayed.
         onShow: $.noop,
@@ -73,8 +82,10 @@
         var w1, h1, w2, h2;
         var self = this;
 
+        if (this.opts.beforeShow.call(this) === false) return;
+
         if (!this.isReady) {
-            return this._loadImage(this.$link.attr('href'), function() {
+            return this._loadImage(this.$link.attr(this.opts.linkAttribute), function() {
                 if (self.isMouseOver || !testMouseOver) {
                     self.show(e);
                 }
@@ -238,6 +249,7 @@
      */
     EasyZoom.prototype.hide = function() {
         if (!this.isOpen) return;
+        if (this.opts.beforeHide.call(this) === false) return;
 
         this.$flyout.detach();
         this.isOpen = false;
@@ -266,7 +278,7 @@
             srcset: $.isArray(srcset) ? srcset.join() : srcset
         });
 
-        this.$link.attr('href', zoomHref);
+        this.$link.attr(this.opts.linkAttribute, zoomHref);
     };
 
     /**
