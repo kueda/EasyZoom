@@ -34,8 +34,10 @@
         onHide: $.noop,
 
         // Callback function to execute when the cursor is moved while over the image.
-        onMove: $.noop
+        onMove: $.noop,
 
+        // Type of event that triggers the zoom. Options: mouseenter | click. Default: mouseenter
+        eventType: 'mouseenter'
     };
 
     /**
@@ -63,10 +65,19 @@
         this.$notice = $('<div class="easyzoom-notice" />');
 
         this.$target.on({
-            'mousemove.easyzoom touchmove.easyzoom': $.proxy(this._onMove, this),
-            'mouseleave.easyzoom touchend.easyzoom': $.proxy(this._onLeave, this),
-            'mouseenter.easyzoom touchstart.easyzoom': $.proxy(this._onEnter, this)
+            'mousemove.easyzoom touchmove.easyzoom': $.proxy(this._onMove, this)
         });
+
+        if (this.opts.eventType === 'click') {
+            this.$target.on({
+                'click.easyzoom touchstart.easyzoom': $.proxy(this._onToggle, this)
+            });
+        } else {
+            this.$target.on({
+                'mousemove.easyzoom touchstart.easyzoom': $.proxy(this._onEnter, this),
+                'mouseleave.easyzoom touchend.easyzoom': $.proxy(this._onLeave, this)
+            });
+        }
 
         this.opts.preventClicks && this.$target.on('click.easyzoom', function(e) {
             e.preventDefault();
@@ -111,6 +122,19 @@
         this.opts.onShow.call(this);
 
         e && this._move(e);
+    };
+
+    /**
+     * On toggle
+     * @private
+     * @param {Event} e
+     */
+    EasyZoom.prototype._onToggle = function(e) {
+        if (this.isOpen) {
+            this._onLeave();
+        } else {
+            this._onEnter(e);
+        }
     };
 
     /**
